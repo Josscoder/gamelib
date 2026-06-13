@@ -88,125 +88,247 @@ func (h *enginePlayerHandler) HandleQuit(p *player.Player) {
 }
 
 func (h *enginePlayerHandler) HandleJump(p *player.Player) {
-
+	if ph, _, ok := h.resolve(p); ok {
+		ph.HandleJump(p)
+	}
 }
 
 func (h *enginePlayerHandler) HandleTeleport(ctx *player.Context, pos mgl64.Vec3) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleTeleport(ctx, pos)
+	}
 }
 
 func (h *enginePlayerHandler) HandleChangeWorld(p *player.Player, before, after *world.World) {
-
+	if ph, _, ok := h.resolve(p); ok {
+		ph.HandleChangeWorld(p, before, after)
+	}
 }
 
 func (h *enginePlayerHandler) HandleToggleSprint(ctx *player.Context, after bool) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleToggleSprint(ctx, after)
+	}
 }
 
 func (h *enginePlayerHandler) HandleToggleSneak(ctx *player.Context, after bool) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleToggleSneak(ctx, after)
+	}
 }
 
 func (h *enginePlayerHandler) HandleChat(ctx *player.Context, message *string) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleChat(ctx, message)
+	}
 }
 
 func (h *enginePlayerHandler) HandleFoodLoss(ctx *player.Context, from int, to *int) {
-
+	ph, m, ok := h.resolve(ctx.Val())
+	if !ok {
+		return
+	}
+	if m.State() != MatchStatePlaying {
+		ctx.Cancel()
+		return
+	}
+	ph.HandleFoodLoss(ctx, from, to)
 }
 
 func (h *enginePlayerHandler) HandleHeal(ctx *player.Context, health *float64, src world.HealingSource) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleHeal(ctx, health, src)
+	}
 }
 
 func (h *enginePlayerHandler) HandleRespawn(p *player.Player, pos *mgl64.Vec3, w **world.World) {
-
+	if ph, _, ok := h.resolve(p); ok {
+		ph.HandleRespawn(p, pos, w)
+	}
 }
 
 func (h *enginePlayerHandler) HandleSkinChange(ctx *player.Context, skin *skin.Skin) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleSkinChange(ctx, skin)
+	}
 }
 
 func (h *enginePlayerHandler) HandleFireExtinguish(ctx *player.Context, pos cube.Pos) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleFireExtinguish(ctx, pos)
+	}
 }
 
 func (h *enginePlayerHandler) HandleStartBreak(ctx *player.Context, pos cube.Pos) {
-
+	ph, m, ok := h.resolve(ctx.Val())
+	if !ok {
+		return
+	}
+	if m.State() != MatchStatePlaying {
+		ctx.Cancel()
+		return
+	}
+	ph.HandleStartBreak(ctx, pos)
 }
 
 func (h *enginePlayerHandler) HandleBlockPick(ctx *player.Context, pos cube.Pos, b world.Block) {
-
+	ph, m, ok := h.resolve(ctx.Val())
+	if !ok {
+		return
+	}
+	if m.State() != MatchStatePlaying {
+		ctx.Cancel()
+		return
+	}
+	ph.HandleBlockPick(ctx, pos, b)
 }
 
 func (h *enginePlayerHandler) HandleItemUse(ctx *player.Context) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleItemUse(ctx)
+	}
 }
 
 func (h *enginePlayerHandler) HandleItemUseOnBlock(ctx *player.Context, pos cube.Pos, face cube.Face, clickPos mgl64.Vec3) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleItemUseOnBlock(ctx, pos, face, clickPos)
+	}
 }
 
 func (h *enginePlayerHandler) HandleItemUseOnEntity(ctx *player.Context, e world.Entity) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleItemUseOnEntity(ctx, e)
+	}
 }
 
 func (h *enginePlayerHandler) HandleItemRelease(ctx *player.Context, item item.Stack, dur time.Duration) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleItemRelease(ctx, item, dur)
+	}
 }
 
 func (h *enginePlayerHandler) HandleItemConsume(ctx *player.Context, item item.Stack) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleItemConsume(ctx, item)
+	}
 }
 
 func (h *enginePlayerHandler) HandleAttackEntity(ctx *player.Context, e world.Entity, force, height *float64, critical *bool) {
-
+	ph, m, ok := h.resolve(ctx.Val())
+	if !ok {
+		return
+	}
+	if m.State() != MatchStatePlaying {
+		ctx.Cancel()
+		return
+	}
+	ph.HandleAttackEntity(ctx, e, force, height, critical)
 }
 
 func (h *enginePlayerHandler) HandleExperienceGain(ctx *player.Context, amount *int) {
-
+	ph, m, ok := h.resolve(ctx.Val())
+	if !ok {
+		return
+	}
+	if m.State() != MatchStatePlaying {
+		ctx.Cancel()
+		return
+	}
+	ph.HandleExperienceGain(ctx, amount)
 }
 
 func (h *enginePlayerHandler) HandlePunchAir(ctx *player.Context) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandlePunchAir(ctx)
+	}
 }
 
 func (h *enginePlayerHandler) HandleSignEdit(ctx *player.Context, pos cube.Pos, frontSide bool, oldText, newText string) {
-
+	ph, m, ok := h.resolve(ctx.Val())
+	if !ok {
+		return
+	}
+	if m.State() != MatchStatePlaying {
+		ctx.Cancel()
+		return
+	}
+	ph.HandleSignEdit(ctx, pos, frontSide, oldText, newText)
 }
 
 func (h *enginePlayerHandler) HandleSleep(ctx *player.Context, sendReminder *bool) {
-
+	ph, m, ok := h.resolve(ctx.Val())
+	if !ok {
+		return
+	}
+	if m.State() != MatchStatePlaying {
+		ctx.Cancel()
+		return
+	}
+	ph.HandleSleep(ctx, sendReminder)
 }
 
 func (h *enginePlayerHandler) HandleLecternPageTurn(ctx *player.Context, pos cube.Pos, oldPage int, newPage *int) {
-
+	ph, m, ok := h.resolve(ctx.Val())
+	if !ok {
+		return
+	}
+	if m.State() != MatchStatePlaying {
+		ctx.Cancel()
+		return
+	}
+	ph.HandleLecternPageTurn(ctx, pos, oldPage, newPage)
 }
 
 func (h *enginePlayerHandler) HandleItemDamage(ctx *player.Context, i item.Stack, damage *int) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleItemDamage(ctx, i, damage)
+	}
 }
 
 func (h *enginePlayerHandler) HandleItemPickup(ctx *player.Context, i *item.Stack) {
-
+	ph, m, ok := h.resolve(ctx.Val())
+	if !ok {
+		return
+	}
+	if m.State() != MatchStatePlaying {
+		ctx.Cancel()
+		return
+	}
+	ph.HandleItemPickup(ctx, i)
 }
 
 func (h *enginePlayerHandler) HandleHeldSlotChange(ctx *player.Context, from, to int) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleHeldSlotChange(ctx, from, to)
+	}
 }
 
 func (h *enginePlayerHandler) HandleItemDrop(ctx *player.Context, s item.Stack) {
-
+	ph, m, ok := h.resolve(ctx.Val())
+	if !ok {
+		return
+	}
+	if m.State() != MatchStatePlaying {
+		ctx.Cancel()
+		return
+	}
+	ph.HandleItemDrop(ctx, s)
 }
 
 func (h *enginePlayerHandler) HandleTransfer(ctx *player.Context, addr *net.UDPAddr) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleTransfer(ctx, addr)
+	}
 }
 
 func (h *enginePlayerHandler) HandleCommandExecution(ctx *player.Context, command cmd.Command, args []string) {
-
+	if ph, _, ok := h.resolve(ctx.Val()); ok {
+		ph.HandleCommandExecution(ctx, command, args)
+	}
 }
 
 func (h *enginePlayerHandler) HandleDiagnostics(p *player.Player, d session.Diagnostics) {
-
+	if ph, _, ok := h.resolve(p); ok {
+		ph.HandleDiagnostics(p, d)
+	}
 }
