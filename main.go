@@ -9,6 +9,7 @@ import (
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/df-mc/dragonfly/server/world"
+	"github.com/go-gl/mathgl/mgl64"
 	_ "github.com/pelletier/go-toml"
 	"github.com/sandertv/gophertunnel/minecraft/text"
 )
@@ -71,7 +72,13 @@ func main() {
 
 		p.Message(text.Colourf("<yellow>Conectando a %s-%s", m.SelectedMap().Name, m.ID()))
 
+		h := p.Tx().RemoveEntity(p)
+
 		m.World().Exec(func(tx *world.Tx) {
+			newP := tx.AddEntity(h).(*player.Player)
+			newP.Teleport(mgl64.Vec3{0, 100, 0})
+			newP.SetGameMode(world.GameModeCreative)
+
 			m.Start(tx)
 		})
 	}

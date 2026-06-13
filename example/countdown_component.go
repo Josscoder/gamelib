@@ -28,7 +28,6 @@ func (c *CountdownComponent) OnStart(tx *world.Tx) {
 	c.taskID = c.match.Scheduler().EverySecond(func(tx *world.Tx) {
 		remaining--
 		c.match.Broadcast(tx, "§eGame starts in §c%d§e seconds!", remaining)
-		println("inicia en ", remaining)
 		if remaining <= 0 {
 			c.match.Scheduler().Cancel(c.taskID)
 			// Trigger actual game start logic

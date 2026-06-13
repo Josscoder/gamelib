@@ -1,9 +1,11 @@
 package gamelib
 
 import (
+	"image/color"
 	"net"
 	"time"
 
+	"github.com/blockbrawn/gamelib/reflect"
 	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/item"
@@ -12,11 +14,15 @@ import (
 	"github.com/df-mc/dragonfly/server/session"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/go-gl/mathgl/mgl64"
+	"github.com/sandertv/gophertunnel/minecraft/protocol"
+	"github.com/sandertv/gophertunnel/minecraft/protocol/packet"
 )
 
 // enginePlayerHandler routes all player events to the correct match handler.
 type enginePlayerHandler struct {
 	engine *Engine
+
+	lastWorldChangeAnimation time.Time
 }
 
 var _ player.Handler = (*enginePlayerHandler)(nil)
@@ -100,6 +106,17 @@ func (h *enginePlayerHandler) HandleTeleport(ctx *player.Context, pos mgl64.Vec3
 }
 
 func (h *enginePlayerHandler) HandleChangeWorld(p *player.Player, before, after *world.World) {
+	if time.Since(h.lastWorldChangeAnimation) > time.Second*2 {
+		reflect.WritePacket(reflect.Session(p), &packet.CameraInstruction{
+			Fade: protocol.Option(protocol.CameraInstructionFade{
+				TimeData: protocol.Option(protocol.CameraFadeTimeData{FadeInDuration: 0, WaitDuration: 1, FadeOutDuration: 0.5}),
+				Colour:   protocol.Option(color.RGBA{G: 55, B: 128, A: 255}),
+			}),
+		})
+
+		h.lastWorldChangeAnimation = time.Now()
+	}
+
 	if ph, _, ok := h.resolve(p); ok {
 		ph.HandleChangeWorld(p, before, after)
 	}

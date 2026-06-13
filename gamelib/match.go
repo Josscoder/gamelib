@@ -313,6 +313,8 @@ func (m *Match) Start(tx *world.Tx) {
 		c.OnStart(tx)
 	}
 
+	m.scheduler.Start()
+
 	m.log.Info("match started")
 }
 

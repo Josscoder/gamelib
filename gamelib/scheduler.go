@@ -2,6 +2,7 @@ package gamelib
 
 import (
 	"sync/atomic"
+	"time"
 
 	"github.com/df-mc/dragonfly/server/world"
 )
@@ -29,6 +30,19 @@ func newScheduler(m *Match) *Scheduler {
 		match: m,
 		tasks: NewSyncMap[TaskID, *scheduledTask](),
 	}
+}
+
+func (s *Scheduler) Start() {
+	ticker := time.NewTicker(time.Second / 20) // 20 TPS
+	go func() {
+		defer ticker.Stop()
+
+		for range ticker.C {
+			s.match.World().Exec(func(tx *world.Tx) {
+				s.tick(tx)
+			})
+		}
+	}()
 }
 
 // EveryTick runs fn every tick (50ms).
