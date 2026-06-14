@@ -6,6 +6,7 @@ import (
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/google/uuid"
+	"github.com/josscoder/fsmgo/state"
 )
 
 type GameDefinition struct {
@@ -21,8 +22,8 @@ type GameDefinition struct {
 	// Components to attach to every match.
 	ComponentFactories []func(m *Match) Component
 
-	// Phases define the ordered lifecycle of a match.
-	PhaseFactories []func(m *Match) Phase
+	// StateSeries define the ordered lifecycle of a match.
+	StateSeries func(m *Match) *state.ScheduledStateSeries
 
 	// Optional: custom map loader.
 	MapLoader MapLoader
@@ -58,14 +59,10 @@ func (def *GameDefinition) NewMatch(engine *Engine) (*Match, error) {
 		m.components = append(m.components, c)
 	}
 
-	// Create phases.
-	for _, factory := range def.PhaseFactories {
-		p := factory(m)
-		m.phases = append(m.phases, p)
+	// Build the state series after the match is fully initialized.
+	if def.StateSeries != nil {
+		m.stateSeries = def.StateSeries(m)
 	}
-
-	// Create scheduler.
-	m.scheduler = newScheduler(m)
 
 	return m, nil
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/google/uuid"
+	"github.com/josscoder/fsmgo/state"
 )
 
 type MatchState uint8
@@ -46,10 +47,8 @@ type Match struct {
 	worldHandler  world.Handler
 
 	// Lifecycle
-	scheduler  *Scheduler
-	components []Component
-	phases     []Phase
-	phaseIndex int
+	components  []Component
+	stateSeries *state.ScheduledStateSeries
 
 	// Hooks
 	onClose func()
@@ -90,8 +89,15 @@ func (m *Match) World() *world.World {
 	return m.arena.World()
 }
 
-// Scheduler returns the match's scheduler.
-func (m *Match) Scheduler() *Scheduler { return m.scheduler }
+// StateSeries returns the match's state series.
+func (m *Match) StateSeries() *state.ScheduledStateSeries { return m.stateSeries }
+
+// CurrentState returns the active state.
+func (m *Match) CurrentState() state.State {
+	return m.stateSeries.Current()
+}
+
+//SkipState, FreezeState, UnFreezeState, etc
 
 // SelectedMap returns the map chosen for this match.
 func (m *Match) SelectedMap() *GameMap { return m.selectedMap }
@@ -101,25 +107,6 @@ func (m *Match) PlayerHandler() player.Handler { return m.playerHandler }
 
 // WorldHandler returns the per-match world handler.
 func (m *Match) WorldHandler() world.Handler { return m.worldHandler }
-
-// CurrentPhase returns the active phase.
-func (m *Match) CurrentPhase() Phase {
-	if m.phaseIndex < 0 || m.phaseIndex >= len(m.phases) {
-		return nil
-	}
-	return m.phases[m.phaseIndex]
-}
-
-// NextPhase advances to the next phase.
-func (m *Match) NextPhase(tx *world.Tx) {
-	if curr := m.CurrentPhase(); curr != nil {
-		curr.End(tx, m)
-	}
-	m.phaseIndex++
-	if next := m.CurrentPhase(); next != nil {
-		next.Start(tx, m)
-	}
-}
 
 // --- Player Management ---
 
@@ -131,7 +118,7 @@ func (m *Match) Join(p *player.Player) error {
 	if m.State() != MatchStateWaiting {
 		return errors.New("match is not accepting players")
 	}
-	if m.participants.Len() >= m.definition.MaxPlayers {
+	if m.isFull() {
 		return errors.New("match is full")
 	}
 
@@ -206,6 +193,10 @@ func (m *Match) AliveParticipants() iter.Seq[*Participant] {
 // ParticipantCount returns the number of participants.
 func (m *Match) ParticipantCount() int {
 	return m.participants.Len()
+}
+
+func (m *Match) isFull() bool {
+	return m.ParticipantCount() >= m.definition.MaxPlayers
 }
 
 // AliveCount returns the number of alive participants.
@@ -290,6 +281,9 @@ func (m *Match) Open() error {
 		c.Enable(m)
 	}
 
+	// Start state series.
+	m.stateSeries.Start()
+
 	m.setState(MatchStateWaiting)
 	m.log.Info("match opened", "map", m.selectedMap.Name)
 	return nil
@@ -302,18 +296,10 @@ func (m *Match) Start(tx *world.Tx) {
 	}
 	m.setState(MatchStatePlaying)
 
-	// Start first phase.
-	if len(m.phases) > 0 {
-		m.phaseIndex = 0
-		m.phases[0].Start(tx, m)
-	}
-
 	// Notify components.
 	for _, c := range m.components {
 		c.OnStart(tx)
 	}
-
-	m.scheduler.Start()
 
 	m.log.Info("match started")
 }
@@ -324,11 +310,6 @@ func (m *Match) End(tx *world.Tx) {
 		return
 	}
 	m.setState(MatchStateEnding)
-
-	// End current phase.
-	if curr := m.CurrentPhase(); curr != nil {
-		curr.End(tx, m)
-	}
 
 	// Notify components.
 	for _, c := range m.components {
@@ -346,8 +327,8 @@ func (m *Match) Close(tx *world.Tx) {
 			c.Disable()
 		}
 
-		// Stop scheduler.
-		m.scheduler.stopAll()
+		// Stop state series.
+		m.stateSeries.End()
 
 		// Remove all players.
 		m.Players(tx, func(p *player.Player, par *Participant) {

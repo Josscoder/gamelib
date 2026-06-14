@@ -59,7 +59,7 @@ func (mm *Matchmaker) Queue(p *player.Player, gameName string) (*Match, error) {
 	// Look through all active matches for this game type
 	for _, m := range matches {
 		// We only want matches in the Waiting state that have room
-		if m.State() == MatchStateWaiting && m.ParticipantCount() < def.MaxPlayers {
+		if m.State() == MatchStateWaiting && !m.isFull() {
 			// Prioritize the match that is closest to starting (highest player count)
 			if bestMatch == nil || m.ParticipantCount() > bestMatch.ParticipantCount() {
 				bestMatch = m

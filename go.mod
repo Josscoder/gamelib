@@ -21,6 +21,7 @@ require (
 	github.com/df-mc/worldupgrader v1.0.20 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
+	github.com/josscoder/fsmgo v0.0.0-20260614235200-a1ac5fbbb18c // indirect
 	github.com/klauspost/compress v1.18.4 // indirect
 	github.com/sandertv/go-raknet v1.15.1-0.20260112202637-beca0b10c217 // indirect
 	github.com/segmentio/fasthash v1.0.3 // indirect

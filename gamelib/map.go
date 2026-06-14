@@ -52,6 +52,7 @@ func (gm *GameMap) LoadArena(matchID uuid.UUID) (*Arena, error) {
 	w := cfg.New()
 	w.StopTime()
 	w.StopWeatherCycle()
+	w.StopRaining()
 	w.SetDifficulty(world.DifficultyNormal)
 
 	return &Arena{w: w, path: destPath}, nil
