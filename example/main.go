@@ -3,7 +3,6 @@ package main
 import (
 	"log/slog"
 
-	"github.com/blockbrawn/gamelib/example"
 	"github.com/blockbrawn/gamelib/gamelib"
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/player"
@@ -22,30 +21,29 @@ func main() {
 		panic(err)
 	}
 
-	// 1. Create engine.
 	engine := gamelib.EngineConfig{
 		Log: slog.Default(),
 	}.New()
-	// 2. Define SkyWars.
-	skywarsDef := &gamelib.GameDefinition{
-		Name:       "skywars",
-		MapsDir:    "maps/skywars",
+
+	exampleDef := &gamelib.GameDefinition{
+		Name:       "example",
+		MapsDir:    "maps",
 		MinPlayers: 2,
 		MaxPlayers: 12,
 		NewPlayerHandler: func(m *gamelib.Match) player.Handler {
-			return example.NewSkyWarsPlayerHandler(m)
+			return NewExamplePlayerHandler(m)
 		},
 		NewWorldHandler: func(m *gamelib.Match) world.Handler {
-			return example.NewSkyWarsWorldHandler(m)
+			return NewExampleWorldHandler(m)
 		},
 		ComponentFactories: []func(m *gamelib.Match) gamelib.Component{
-			example.NewCountdownComponent(10),
-			example.NewCageComponent(),
+			NewCountdownComponent(10),
+			NewCageComponent(),
 			//NewChestFillComponent(),
 		},
 		PhaseFactories: []func(m *gamelib.Match) gamelib.Phase{
 			func(m *gamelib.Match) gamelib.Phase {
-				return &example.GracePeriodPhase{}
+				return &GracePeriodPhase{}
 			},
 			/*func(m *gamelib.Match) gamelib.Phase {
 				return &PvPPhase{}
@@ -55,7 +53,7 @@ func main() {
 			},*/
 		},
 	}
-	engine.Register(skywarsDef)
+	engine.Register(exampleDef)
 
 	srv := conf.New()
 	srv.CloseOnProgramEnd()
@@ -65,7 +63,7 @@ func main() {
 		_ = engine.HandleJoin(p)
 		p.Handle(engine.PlayerHandler())
 
-		m, err := engine.Matchmaker().Queue(p, "skywars")
+		m, err := engine.Matchmaker().Queue(p, "example")
 		if err != nil {
 			slog.Default().Error("failed to queue matchmaker", "error", err)
 		}

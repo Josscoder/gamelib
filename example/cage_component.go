@@ -1,4 +1,4 @@
-package example
+package main
 
 import (
 	"github.com/blockbrawn/gamelib/gamelib"
@@ -19,9 +19,6 @@ func NewCageComponent() func(m *gamelib.Match) gamelib.Component {
 }
 
 func (c *CageComponent) OnJoin(p *player.Player, par *gamelib.Participant) {
-	// Teleport player to cage spawn from map config
-	// Place cage blocks around spawn
-
 	println("Se dio la jaula")
 }
 
@@ -31,6 +28,5 @@ func (c *CageComponent) OnQuit(p *player.Player, par *gamelib.Participant, disco
 }
 
 func (c *CageComponent) OnStart(tx *world.Tx) {
-	// Destroy all cages — release players
 	println("Se quito la jaula")
 }
