@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
+	"github.com/df-mc/dragonfly/server/entity"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/df-mc/dragonfly/server/world/mcdb"
 	"github.com/google/uuid"
@@ -42,11 +44,12 @@ func (gm *GameMap) LoadArena(matchID uuid.UUID) (*Arena, error) {
 	}
 
 	cfg := world.Config{
-		Dim:       world.Overworld,
-		Provider:  prov,
-		Generator: world.NopGenerator{},
-		ReadOnly:  false,
-		// Entities:  entity.DefaultRegistry, (Configure as needed)
+		Dim:          world.Overworld,
+		Provider:     prov,
+		Generator:    world.NopGenerator{},
+		ReadOnly:     false,
+		SaveInterval: time.Hour,
+		Entities:     entity.DefaultRegistry,
 	}
 
 	w := cfg.New()

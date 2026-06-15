@@ -138,15 +138,21 @@ func (m *Match) Join(p *player.Player) error {
 	m.participants.Store(p.XUID(), par)
 	sess.setMatch(m)
 
-	// Notify components.
-	for _, c := range m.components {
-		c.OnJoin(p, par)
-	}
+	// Change world.
+	oldP := p.Tx().RemoveEntity(p)
+	m.World().Exec(func(tx *world.Tx) { //TODO: check this later
+		newP := tx.AddEntity(oldP).(*player.Player)
+
+		// Notify components.
+		for _, c := range m.components {
+			c.OnJoin(newP, par)
+		}
+	})
 
 	return nil
 }
 
-// Leave removes a player from the match.
+// leave removes a player from the match.
 func (m *Match) leave(p *player.Player, disconnected bool) {
 	par, ok := m.participants.Load(p.XUID())
 	if !ok {
