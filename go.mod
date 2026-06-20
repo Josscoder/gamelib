@@ -3,11 +3,11 @@ module github.com/blockbrawn/gamelib
 go 1.26.0
 
 require (
-	github.com/df-mc/dragonfly v0.10.14-0.20260609033005-7c304285e8de
+	github.com/df-mc/dragonfly v0.10.15-0.20260617164324-7f68b0673dd7
 	github.com/go-gl/mathgl v1.2.0
 	github.com/google/uuid v1.6.0
 	github.com/pelletier/go-toml v1.9.5
-	github.com/sandertv/gophertunnel v1.56.2
+	github.com/sandertv/gophertunnel v1.57.0
 )
 
 require (
@@ -18,7 +18,7 @@ require (
 	github.com/df-mc/go-xsapi v1.0.1 // indirect
 	github.com/df-mc/goleveldb v1.1.9 // indirect
 	github.com/df-mc/jsonc v1.0.5 // indirect
-	github.com/df-mc/worldupgrader v1.0.20 // indirect
+	github.com/df-mc/worldupgrader v1.0.21 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/josscoder/fsmgo v0.0.0-20260614235200-a1ac5fbbb18c // indirect

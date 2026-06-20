@@ -13,15 +13,28 @@ import (
 	"github.com/google/uuid"
 )
 
+type MapConfig interface{}
+
 type GameMap struct {
 	Name      string
 	SourceZip string // path to world.zip
 	ConfigRaw []byte // raw config bytes (JSON)
+	mapConfig MapConfig
 }
 
-// UnmarshalConfig deserializes the map config into the given type.
-func (gm *GameMap) UnmarshalConfig(v any) error {
-	return json.Unmarshal(gm.ConfigRaw, v)
+func (gm *GameMap) LoadConfig(v MapConfig) error {
+	if err := json.Unmarshal(gm.ConfigRaw, v); err != nil {
+		return err
+	}
+	gm.mapConfig = v
+	return nil
+}
+
+func GetConfig[C MapConfig](gm *GameMap) C {
+	if gm.mapConfig == nil {
+		panic("config not loaded, call LoadConfig first")
+	}
+	return gm.mapConfig.(C)
 }
 
 // LoadArena unzips the world, opens it, and returns an Arena.

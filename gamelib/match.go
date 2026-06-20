@@ -59,6 +59,11 @@ type Match struct {
 // ID returns a unique identifier for this match.
 func (m *Match) ID() uuid.UUID { return m.id }
 
+// ShortID returns a unique short identifier for this match.
+func (m *Match) ShortID() string {
+	return m.id.String()[:5]
+}
+
 // Engine returns the parent engine.
 func (m *Match) Engine() *Engine { return m.engine }
 
@@ -96,8 +101,6 @@ func (m *Match) StateSeries() *state.ScheduledStateSeries { return m.stateSeries
 func (m *Match) CurrentState() state.State {
 	return m.stateSeries.Current()
 }
-
-//SkipState, FreezeState, UnFreezeState, etc
 
 // SelectedMap returns the map chosen for this match.
 func (m *Match) SelectedMap() *GameMap { return m.selectedMap }
@@ -140,7 +143,7 @@ func (m *Match) Join(p *player.Player) error {
 
 	// Change world.
 	oldP := p.Tx().RemoveEntity(p)
-	m.World().Exec(func(tx *world.Tx) { //TODO: check this later
+	m.World().Exec(func(tx *world.Tx) {
 		newP := tx.AddEntity(oldP).(*player.Player)
 
 		// Notify components.
@@ -205,6 +208,10 @@ func (m *Match) isFull() bool {
 	return m.ParticipantCount() >= m.definition.MaxPlayers
 }
 
+func (m *Match) HasEnoughPlayers() bool {
+	return m.ParticipantCount() >= m.definition.MinPlayers
+}
+
 // AliveCount returns the number of alive participants.
 func (m *Match) AliveCount() int {
 	n := 0
@@ -225,13 +232,6 @@ func (m *Match) Players(tx *world.Tx, fn func(*player.Player, *Participant)) {
 		}
 		fn(p, par)
 	}
-}
-
-// Broadcast sends a message to all players via tx.
-func (m *Match) Broadcast(tx *world.Tx, format string, args ...any) {
-	m.Players(tx, func(p *player.Player, _ *Participant) {
-		p.Messagef(format, args...)
-	})
 }
 
 // SetMeta / Meta for arbitrary match data.

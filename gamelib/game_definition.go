@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/df-mc/dragonfly/server/player"
+	"github.com/df-mc/dragonfly/server/player/scoreboard"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/google/uuid"
 	"github.com/josscoder/fsmgo/state"
@@ -27,6 +28,9 @@ type GameDefinition struct {
 
 	// Optional: custom map loader.
 	MapLoader MapLoader
+
+	// Optional: scoreboard
+	Scoreboard func(m *Match, p *player.Player, pa *Participant) *scoreboard.Scoreboard
 }
 
 // NewMatch creates and loads a new Match from this definition.
