@@ -31,7 +31,7 @@ func Definition() *gamelib.GameDefinition {
 		StateSeries: func(m *gamelib.Match) *state.ScheduledStateSeries {
 			states := []state.State{
 				NewPreGameState(m),
-				NewFightState(m),
+				NewInGameState(m),
 				NewEndGameState(m),
 			}
 			return state.NewScheduledStateSeries(context.Background(), states, time.Second)
@@ -48,8 +48,7 @@ func Definition() *gamelib.GameDefinition {
 			}
 
 			cs := m.CurrentState()
-
-			if _, ok := cs.(*PreGameState); ok {
+			if ps, ok := cs.(*PreGameState); ok {
 				lines = append(lines,
 					text.Colourf("<blue>Mapa:</blue>"),
 					m.SelectedMap().Name,
@@ -60,17 +59,23 @@ func Definition() *gamelib.GameDefinition {
 					"  ",
 				)
 				if !m.HasEnoughPlayers() {
-					lines = append(lines, text.Colourf("<red>Esperando"))
+					r := preGameIdleTimeout - ps.idleElapsed
+					lines = append(lines,
+						text.Colourf("<red>Esperando jugadores"),
+						"   ",
+						text.Colourf("<blue>Cierra en:</blue>"),
+						r.String(),
+					)
 				} else {
 					lines = append(lines, text.Colourf("<blue>Inicia en:</blue>"), cs.GetRemainingTime().String())
 				}
-			} else if _, ok := cs.(*FightState); ok {
+			} else if _, ok := cs.(*InGameState); ok {
 				lines = append(lines, text.Colourf("<blue>Termina en:</blue>"), cs.GetRemainingTime().String())
 			} else if _, ok := cs.(*EndGameState); ok {
 				lines = append(lines, text.Colourf("<blue>Termina en:</blue>"), cs.GetRemainingTime().String())
 			}
 
-			lines = append(lines, "   ")
+			lines = append(lines, "    ")
 			lines = append(lines, text.Colourf("<gold>mc.blockbrawn.net</gold>"))
 
 			_, _ = sb.WriteString(strings.Join(lines, "\n"))

@@ -23,13 +23,16 @@ func (s *SpawnComponent) Enable(m *gamelib.Match) {
 	if err := m.SelectedMap().LoadConfig(&ExampleMapData{}); err != nil {
 		log.Fatal(err)
 	}
-	
 }
 
 func (s *SpawnComponent) OnJoin(p *player.Player, par *gamelib.Participant) {
-	sm := s.match.SelectedMap()
-	cfg := gamelib.GetConfig[*ExampleMapData](sm)
-	p.Teleport(cfg.Mid.Vec3)
+	oldP := p.Tx().RemoveEntity(p)
+	s.match.World().Exec(func(tx *world.Tx) {
+		newP := tx.AddEntity(oldP).(*player.Player)
+		sm := s.match.SelectedMap()
+		cfg := gamelib.GetConfig[*ExampleMapData](sm)
+		newP.Teleport(cfg.Mid.Vec3)
+	})
 }
 
 func (s *SpawnComponent) OnQuit(p *player.Player, par *gamelib.Participant, disconnected bool) {
@@ -37,5 +40,30 @@ func (s *SpawnComponent) OnQuit(p *player.Player, par *gamelib.Participant, disc
 }
 
 func (s *SpawnComponent) OnStart(tx *world.Tx) {
+	sm := s.match.SelectedMap()
+	cfg := gamelib.GetConfig[*ExampleMapData](sm)
+
+	spawns := make([]Location, 0, len(cfg.Spawns))
+	for _, spawn := range cfg.Spawns {
+		spawns = append(spawns, spawn.SpawnPoint)
+	}
+
+	index := 0
+
+	s.match.Players(tx, func(p *player.Player, pa *gamelib.Participant) {
+		if len(spawns) == 0 {
+			return
+		}
+
+		spawn := spawns[index%len(spawns)]
+
+		p.Teleport(spawn.Vec3)
+		//p.SetRotation(spawn.Rotation)
+
+		index++
+	})
+}
+
+func (s *SpawnComponent) OnEnd(tx *world.Tx) {
 
 }
