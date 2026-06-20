@@ -32,6 +32,7 @@ type Match struct {
 	engine       *Engine
 	definition   *GameDefinition
 	participants *SyncMap[string, *Participant]
+	teams        *SyncMap[string, *Team]
 	state        MatchState
 	metadata     map[string]any
 	log          *slog.Logger
@@ -59,10 +60,8 @@ type Match struct {
 // ID returns a unique identifier for this match.
 func (m *Match) ID() uuid.UUID { return m.id }
 
-// ShortID returns a unique short identifier for this match.
-func (m *Match) ShortID() string {
-	return m.id.String()[:5]
-}
+// ShortID returns the first 5 characters of the UUID string.
+func (m *Match) ShortID() string { return m.id.String()[:5] }
 
 // Engine returns the parent engine.
 func (m *Match) Engine() *Engine { return m.engine }
@@ -97,8 +96,11 @@ func (m *Match) World() *world.World {
 // StateSeries returns the match's state series.
 func (m *Match) StateSeries() *state.ScheduledStateSeries { return m.stateSeries }
 
-// CurrentState returns the active state.
+// CurrentState returns the active state, or nil if no series is configured.
 func (m *Match) CurrentState() state.State {
+	if m.stateSeries == nil {
+		return nil
+	}
 	return m.stateSeries.Current()
 }
 
@@ -165,6 +167,7 @@ func (m *Match) leave(p *player.Player, disconnected bool) {
 	par.session.setMatch(nil)
 }
 
+// Leave removes a player voluntarily from the match.
 func (m *Match) Leave(p *player.Player) {
 	m.leave(p, false)
 }
@@ -217,7 +220,7 @@ func (m *Match) AliveCount() int {
 	return n
 }
 
-// Players calls fn for each participant that can be resolved in tx.
+// Players calls fn for each participant resolvable in tx.
 func (m *Match) Players(tx *world.Tx, fn func(*player.Player, *Participant)) {
 	for _, par := range m.participants.Map() {
 		p, ok := par.session.Player(tx)
@@ -228,13 +231,14 @@ func (m *Match) Players(tx *world.Tx, fn func(*player.Player, *Participant)) {
 	}
 }
 
-// SetMeta / Meta for arbitrary match data.
+// SetMeta stores an arbitrary value for the given key.
 func (m *Match) SetMeta(key string, val any) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.metadata[key] = val
 }
 
+// Meta retrieves an arbitrary value by key.
 func (m *Match) Meta(key string) (any, bool) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -244,45 +248,54 @@ func (m *Match) Meta(key string) (any, bool) {
 
 // --- Lifecycle ---
 
-// Open prepares the match: loads a map, creates the world,
-// installs handlers, and enters the Waiting state.
+// Open selects a random map and opens the arena.
 func (m *Match) Open() error {
-	// Select a random map (or allow voting later).
 	if len(m.availableMaps) == 0 {
 		return errors.New("no maps available")
 	}
 	m.selectedMap = m.availableMaps[rand.Intn(len(m.availableMaps))]
+	return m.openArena()
+}
 
-	// Load world.
+// OpenWithMap forces a specific map by name and opens the arena.
+func (m *Match) OpenWithMap(mapName string) error {
+	for _, gm := range m.availableMaps {
+		if gm.Name == mapName {
+			m.selectedMap = gm
+			return m.openArena()
+		}
+	}
+	return fmt.Errorf("map %q not found in definition %q", mapName, m.definition.Name)
+}
+
+// openArena is the shared setup logic for Open and OpenWithMap.
+func (m *Match) openArena() error {
 	arena, err := m.selectedMap.LoadArena(m.id)
 	if err != nil {
 		return fmt.Errorf("loading arena: %w", err)
 	}
 	m.arena = arena
 
-	// Create handlers.
 	if m.definition.NewPlayerHandler != nil {
 		m.playerHandler = m.definition.NewPlayerHandler(m)
 	} else {
 		m.playerHandler = player.NopHandler{}
 	}
-
 	if m.definition.NewWorldHandler != nil {
 		m.worldHandler = m.definition.NewWorldHandler(m)
 	} else {
 		m.worldHandler = world.NopHandler{}
 	}
 
-	// Install the world handler.
 	m.arena.World().Handle(&matchWorldHandler{match: m})
 
-	// Enable components.
 	for _, c := range m.components {
 		c.Enable(m)
 	}
 
-	// Start state series.
-	m.stateSeries.Start()
+	if m.stateSeries != nil {
+		m.stateSeries.Start()
+	}
 
 	m.setState(MatchStateWaiting)
 	m.log.Info("match opened", "map", m.selectedMap.Name)
@@ -319,33 +332,36 @@ func (m *Match) End(tx *world.Tx) {
 	m.log.Info("match ending")
 }
 
-// Close tears down everything.
+// Close tears down everything. Safe to call once.
 func (m *Match) Close(tx *world.Tx) {
-	if m.closed.CompareAndSwap(false, true) {
-		// Disable components.
-		for _, c := range m.components {
-			c.Disable()
-		}
-
-		// Stop state series.
-		m.stateSeries.End()
-
-		// Remove all players.
-		m.Players(tx, func(p *player.Player, par *Participant) {
-			m.leave(p, false)
-		})
-
-		m.setState(MatchStateClosed)
-
-		// Close arena.
-		if m.arena != nil {
-			m.arena.Close()
-		}
-
-		if m.onClose != nil {
-			m.onClose()
-		}
-
-		m.log.Info("match closed")
+	if !m.closed.CompareAndSwap(false, true) {
+		return
 	}
+
+	for _, c := range m.components {
+		c.Disable()
+	}
+
+	// Stop state series.
+	if m.stateSeries != nil {
+		m.stateSeries.End()
+	}
+
+	// Remove all players
+	m.Players(tx, func(p *player.Player, par *Participant) {
+		m.leave(p, false)
+	})
+
+	m.setState(MatchStateClosed)
+
+	// Close arena.
+	if m.arena != nil {
+		m.arena.Close()
+	}
+
+	if m.onClose != nil {
+		m.onClose()
+	}
+
+	m.log.Info("match closed")
 }

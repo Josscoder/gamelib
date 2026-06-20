@@ -29,7 +29,7 @@ func (fs *FightState) OnUpdate(time.Duration) {
 	m := fs.Match()
 	m.World().Exec(func(tx *world.Tx) {
 		m.Players(tx, func(p *player.Player, pa *gamelib.Participant) {
-			if sb := m.Definition().Scoreboard; sb != nil {
+			if sb := m.Definition().NewScoreboard; sb != nil {
 				p.SendScoreboard(sb(m, p, pa))
 			}
 		})

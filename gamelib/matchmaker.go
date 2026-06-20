@@ -8,26 +8,144 @@ import (
 	"github.com/google/uuid"
 )
 
+// MatchmakingStrategy is the pluggable decision-making layer of the Matchmaker.
+// Implement this to provide custom logic (ELO, region, party grouping, etc.).
+type MatchmakingStrategy interface {
+	// PickMatch receives all valid waiting candidates and returns the best one,
+	// or nil to signal that a new match should be created instead.
+	PickMatch(p *player.Player, def *GameDefinition, candidates []*Match) *Match
+}
+
+// DefaultMatchmakingStrategy fills the most populated waiting match first,
+// so matches reach MinPlayers and start as fast as possible.
+type DefaultMatchmakingStrategy struct{}
+
+func (DefaultMatchmakingStrategy) PickMatch(_ *player.Player, _ *GameDefinition, candidates []*Match) *Match {
+	var best *Match
+	for _, m := range candidates {
+		if best == nil || m.ParticipantCount() > best.ParticipantCount() {
+			best = m
+		}
+	}
+	return best
+}
+
+// QueueOptions configure how the Matchmaker places a single player.
+type QueueOptions struct {
+	// MapName forces the player into a match using this specific map.
+	// If no waiting match with this map exists, a new one is created with it.
+	// Leave empty for automatic (random) map selection.
+	MapName string
+}
+
 // Matchmaker manages active matches and queues players into the best available match.
 type Matchmaker struct {
 	mu            sync.RWMutex
 	engine        *Engine
-	activeMatches map[string]map[uuid.UUID]*Match // Map definition Name -> Match ID -> Match instance
+	strategy      MatchmakingStrategy
+	activeMatches map[string]map[uuid.UUID]*Match
 }
 
 // newMatchmaker initializes a new matchmaker linked to the passed engine.
 func newMatchmaker(e *Engine) *Matchmaker {
 	return &Matchmaker{
 		engine:        e,
+		strategy:      DefaultMatchmakingStrategy{},
 		activeMatches: make(map[string]map[uuid.UUID]*Match),
 	}
+}
+
+// SetStrategy replaces the matchmaking strategy with a custom one.
+func (mm *Matchmaker) SetStrategy(s MatchmakingStrategy) {
+	mm.mu.Lock()
+	defer mm.mu.Unlock()
+	mm.strategy = s
+}
+
+// ActiveMatches returns a snapshot of all active matches for a game type.
+func (mm *Matchmaker) ActiveMatches(gameName string) []*Match {
+	mm.mu.RLock()
+	defer mm.mu.RUnlock()
+	pool := mm.activeMatches[gameName]
+	out := make([]*Match, 0, len(pool))
+	for _, m := range pool {
+		out = append(out, m)
+	}
+	return out
+}
+
+// Queue attempts to place a player into the best available match.
+// If no matches are available (or all are full), it dynamically creates a new one.
+func (mm *Matchmaker) Queue(p *player.Player, gameName string) (*Match, error) {
+	return mm.QueueWithOptions(p, gameName, QueueOptions{})
+}
+
+// QueueWithOptions queues a player with full control over match selection.
+func (mm *Matchmaker) QueueWithOptions(p *player.Player, gameName string, opts QueueOptions) (*Match, error) {
+	def, ok := mm.engine.definitions[gameName]
+	if !ok {
+		return nil, fmt.Errorf("unknown game definition: %q", gameName)
+	}
+
+	// 1. Build candidates under a read lock.
+	mm.mu.RLock()
+	pool := mm.activeMatches[gameName]
+	candidates := make([]*Match, 0, len(pool))
+	for _, m := range pool {
+		if m.State() != MatchStateWaiting || m.isFull() {
+			continue
+		}
+		if opts.MapName != "" {
+			sel := m.SelectedMap()
+			if sel == nil || sel.Name != opts.MapName {
+				continue
+			}
+		}
+		candidates = append(candidates, m)
+	}
+	strategy := mm.strategy
+	mm.mu.RUnlock()
+
+	// 2. Let the strategy pick.
+	if best := strategy.PickMatch(p, def, candidates); best != nil {
+		if err := best.Join(p); err == nil {
+			return best, nil
+		}
+		// Slot was taken between picking and joining — fall through to create a new match.
+	}
+
+	// 3. Create a new match.
+	newMatch, err := def.NewMatch(mm.engine)
+	if err != nil {
+		return nil, fmt.Errorf("creating match: %w", err)
+	}
+
+	newMatch.onClose = func() {
+		mm.unregisterMatch(def.Name, newMatch.ID())
+	}
+
+	if opts.MapName != "" {
+		err = newMatch.OpenWithMap(opts.MapName)
+	} else {
+		err = newMatch.Open()
+	}
+	if err != nil {
+		return nil, fmt.Errorf("opening match: %w", err)
+	}
+
+	mm.registerMatch(def.Name, newMatch)
+
+	if err := newMatch.Join(p); err != nil {
+		return nil, fmt.Errorf("joining new match: %w", err)
+	}
+
+	return newMatch, nil
 }
 
 // registerMatch adds a newly created match to the matchmaking pool.
 func (mm *Matchmaker) registerMatch(gameName string, m *Match) {
 	mm.mu.Lock()
 	defer mm.mu.Unlock()
-
 	if mm.activeMatches[gameName] == nil {
 		mm.activeMatches[gameName] = make(map[uuid.UUID]*Match)
 	}
@@ -38,69 +156,7 @@ func (mm *Matchmaker) registerMatch(gameName string, m *Match) {
 func (mm *Matchmaker) unregisterMatch(gameName string, mID uuid.UUID) {
 	mm.mu.Lock()
 	defer mm.mu.Unlock()
-
 	if mm.activeMatches[gameName] != nil {
 		delete(mm.activeMatches[gameName], mID)
 	}
-}
-
-// Queue attempts to place a player into the best available match.
-// If no matches are available (or all are full), it dynamically creates a new one.
-func (mm *Matchmaker) Queue(p *player.Player, gameName string) (*Match, error) {
-	def, ok := mm.engine.definitions[gameName]
-	if !ok {
-		return nil, fmt.Errorf("unknown game definition: %s", gameName)
-	}
-
-	mm.mu.RLock()
-	matches := mm.activeMatches[gameName]
-
-	var bestMatch *Match
-	// Look through all active matches for this game type
-	for _, m := range matches {
-		// We only want matches in the Waiting state that have room
-		if m.State() == MatchStateWaiting && !m.isFull() {
-			// Prioritize the match that is closest to starting (highest player count)
-			if bestMatch == nil || m.ParticipantCount() > bestMatch.ParticipantCount() {
-				bestMatch = m
-			}
-		}
-	}
-	mm.mu.RUnlock() // Unlock before attempting to join inside the Match, to avoid deadlocks
-
-	// If we found a suitable match, try to join it
-	if bestMatch != nil {
-		err := bestMatch.Join(p)
-		if err == nil {
-			return bestMatch, nil
-		}
-		// If joining failed (e.g., someone else filled the last spot a millisecond ago),
-		// we skip the return and fall through to create a new match.
-	}
-
-	// CREATE A NEW MATCH (Fallback)
-	newMatch, err := def.NewMatch(mm.engine)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create new match blueprint: %w", err)
-	}
-
-	// Register a hook so the match removes itself from Matchmaker when it closes
-	newMatch.onClose = func() {
-		mm.unregisterMatch(def.Name, newMatch.ID())
-	}
-
-	// Initialize the map, zip extraction, worlds and handlers
-	if err := newMatch.Open(); err != nil {
-		return nil, fmt.Errorf("failed to open new match arena: %w", err)
-	}
-
-	// Register in the active pool so other Queuing players can find it
-	mm.registerMatch(def.Name, newMatch)
-
-	// Deposit the player into their freshly generated match
-	if err := newMatch.Join(p); err != nil {
-		return nil, fmt.Errorf("failed joining newly created match: %w", err)
-	}
-
-	return newMatch, nil
 }

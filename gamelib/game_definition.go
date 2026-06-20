@@ -30,7 +30,7 @@ type GameDefinition struct {
 	MapLoader MapLoader
 
 	// Optional: scoreboard
-	Scoreboard func(m *Match, p *player.Player, pa *Participant) *scoreboard.Scoreboard
+	NewScoreboard func(m *Match, p *player.Player, pa *Participant) *scoreboard.Scoreboard
 }
 
 // NewMatch creates and loads a new Match from this definition.
@@ -40,6 +40,7 @@ func (def *GameDefinition) NewMatch(engine *Engine) (*Match, error) {
 		engine:       engine,
 		definition:   def,
 		participants: NewSyncMap[string, *Participant](),
+		teams:        NewSyncMap[string, *Team](),
 		state:        MatchStateCreated,
 		metadata:     make(map[string]any),
 		log:          engine.log.With("match", def.Name),

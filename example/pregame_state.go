@@ -35,7 +35,7 @@ func (ps *PreGameState) OnUpdate(time.Duration) {
 			progress := math.Max(0, math.Min(1, r.Seconds()/ps.GetDuration().Seconds()))
 			p.SetExperienceProgress(progress)
 
-			if sb := m.Definition().Scoreboard; sb != nil {
+			if sb := m.Definition().NewScoreboard; sb != nil {
 				p.SendScoreboard(sb(m, p, pa))
 			}
 		})

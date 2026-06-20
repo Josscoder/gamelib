@@ -36,7 +36,7 @@ func Definition() *gamelib.GameDefinition {
 			}
 			return state.NewScheduledStateSeries(context.Background(), states, time.Second)
 		},
-		Scoreboard: func(m *gamelib.Match, p *player.Player, pa *gamelib.Participant) *scoreboard.Scoreboard {
+		NewScoreboard: func(m *gamelib.Match, p *player.Player, pa *gamelib.Participant) *scoreboard.Scoreboard {
 			sb := scoreboard.New(text.Colourf("<white><b>Example</b></white>"))
 			sb.RemovePadding()
 
