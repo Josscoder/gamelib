@@ -7,6 +7,7 @@ import (
 	"github.com/blockbrawn/gamelib/example"
 	"github.com/blockbrawn/gamelib/gamelib"
 	"github.com/df-mc/dragonfly/server"
+	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/player/chat"
 	"github.com/sandertv/gophertunnel/minecraft/text"
 )
@@ -19,6 +20,10 @@ func main() {
 		panic(err)
 	}
 
+	srv := conf.New()
+	srv.CloseOnProgramEnd()
+	srv.Listen()
+
 	engine := gamelib.EngineConfig{
 		Log: slog.Default(),
 	}.New()
@@ -26,9 +31,17 @@ func main() {
 	def := example.Definition()
 	engine.Register(def)
 
-	srv := conf.New()
-	srv.CloseOnProgramEnd()
-	srv.Listen()
+	commands := []cmd.Command{
+		cmd.New("pause", "Pause state", []string{}, gamelib.NewPauseCommand(engine)),
+		cmd.New("resume", "Resume state", []string{}, gamelib.NewResumeCommand(engine)),
+		cmd.New("skip", "Skip the current state", []string{}, gamelib.NewSkipCommand(engine)),
+		cmd.New("previous", "Return to the previous state", []string{}, gamelib.NewPreviousCommand(engine)),
+		cmd.New("rewind", "Rewind to the first state", []string{}, gamelib.NewRewindCommand(engine)),
+	}
+
+	for _, c := range commands {
+		cmd.Register(c)
+	}
 
 	for p := range srv.Accept() {
 		_ = engine.HandleJoin(p)

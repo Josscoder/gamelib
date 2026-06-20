@@ -141,16 +141,10 @@ func (m *Match) Join(p *player.Player) error {
 	m.participants.Store(p.XUID(), par)
 	sess.setMatch(m)
 
-	// Change world.
-	oldP := p.Tx().RemoveEntity(p)
-	m.World().Exec(func(tx *world.Tx) {
-		newP := tx.AddEntity(oldP).(*player.Player)
-
-		// Notify components.
-		for _, c := range m.components {
-			c.OnJoin(newP, par)
-		}
-	})
+	// Notify components.
+	for _, c := range m.components {
+		c.OnJoin(p, par)
+	}
 
 	return nil
 }

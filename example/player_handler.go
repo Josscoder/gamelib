@@ -2,7 +2,9 @@ package example
 
 import (
 	"github.com/blockbrawn/gamelib/gamelib"
+	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/player"
+	"github.com/go-gl/mathgl/mgl64"
 )
 
 type ExamplePlayerHandler struct {
@@ -12,4 +14,11 @@ type ExamplePlayerHandler struct {
 
 func NewExamplePlayerHandler(m *gamelib.Match) *ExamplePlayerHandler {
 	return &ExamplePlayerHandler{match: m}
+}
+
+func (eh ExamplePlayerHandler) HandleMove(ctx *player.Context, newPos mgl64.Vec3, _ cube.Rotation) {
+	if eh.match.State() != gamelib.MatchStatePlaying && newPos.Y() < 0 {
+		cfg := gamelib.GetConfig[*ExampleMapData](eh.match.SelectedMap())
+		ctx.Val().Teleport(cfg.Mid.Vec3)
+	}
 }
