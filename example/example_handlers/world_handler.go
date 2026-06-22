@@ -1,4 +1,4 @@
-package example
+package example_handlers
 
 import (
 	"github.com/blockbrawn/gamelib/gamelib"

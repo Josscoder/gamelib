@@ -1,4 +1,4 @@
-package example
+package example_config
 
 import (
 	"github.com/df-mc/dragonfly/server/block/cube"

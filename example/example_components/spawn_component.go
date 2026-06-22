@@ -1,8 +1,9 @@
-package example
+package example_components
 
 import (
 	"log"
 
+	"github.com/blockbrawn/gamelib/example/example_config"
 	"github.com/blockbrawn/gamelib/gamelib"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
@@ -20,7 +21,7 @@ func NewSpawnComponent() func(m *gamelib.Match) gamelib.Component {
 }
 
 func (s *SpawnComponent) Enable(m *gamelib.Match) {
-	if err := m.SelectedMap().LoadConfig(&ExampleMapData{}); err != nil {
+	if err := m.SelectedMap().LoadConfig(&example_config.ExampleMapData{}); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -30,7 +31,7 @@ func (s *SpawnComponent) OnJoin(p *player.Player, par *gamelib.Participant) {
 	s.match.World().Exec(func(tx *world.Tx) {
 		newP := tx.AddEntity(oldP).(*player.Player)
 		sm := s.match.SelectedMap()
-		cfg := gamelib.GetConfig[*ExampleMapData](sm)
+		cfg := gamelib.GetConfig[*example_config.ExampleMapData](sm)
 		newP.Teleport(cfg.Mid.Vec3)
 	})
 }
@@ -41,9 +42,9 @@ func (s *SpawnComponent) OnQuit(p *player.Player, par *gamelib.Participant, disc
 
 func (s *SpawnComponent) OnStart(tx *world.Tx) {
 	sm := s.match.SelectedMap()
-	cfg := gamelib.GetConfig[*ExampleMapData](sm)
+	cfg := gamelib.GetConfig[*example_config.ExampleMapData](sm)
 
-	spawns := make([]Location, 0, len(cfg.Spawns))
+	spawns := make([]example_config.Location, 0, len(cfg.Spawns))
 	for _, spawn := range cfg.Spawns {
 		spawns = append(spawns, spawn.SpawnPoint)
 	}

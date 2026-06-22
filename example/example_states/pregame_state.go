@@ -1,4 +1,4 @@
-package example
+package example_states
 
 import (
 	"math"
@@ -12,14 +12,14 @@ import (
 )
 
 const (
-	preGameIdleTimeout = 3 * time.Minute
+	PreGameIdleTimeout = 3 * time.Minute
 	preGameIdleWarning = 30 * time.Second
 )
 
 type PreGameState struct {
 	*gamelib.MatchStateBase
 
-	idleElapsed time.Duration
+	IdleElapsed time.Duration
 	warnedClose bool
 }
 
@@ -30,7 +30,7 @@ func NewPreGameState(m *gamelib.Match) *PreGameState {
 }
 
 func (ps *PreGameState) OnStart() {
-	ps.idleElapsed = 0
+	ps.IdleElapsed = 0
 	ps.warnedClose = false
 	ps.Pause()
 }
@@ -58,9 +58,9 @@ func (ps *PreGameState) OnUpdate(delta time.Duration) {
 		})
 
 		if !m.HasEnoughPlayers() {
-			ps.idleElapsed += delta
+			ps.IdleElapsed += delta
 
-			remaining := preGameIdleTimeout - ps.idleElapsed
+			remaining := PreGameIdleTimeout - ps.IdleElapsed
 
 			if !ps.warnedClose && remaining <= preGameIdleWarning {
 				ps.warnedClose = true
@@ -73,7 +73,7 @@ func (ps *PreGameState) OnUpdate(delta time.Duration) {
 				})
 			}
 
-			if ps.idleElapsed >= preGameIdleTimeout {
+			if ps.IdleElapsed >= PreGameIdleTimeout {
 				m.Close(tx)
 				return
 			}
@@ -92,7 +92,7 @@ func (ps *PreGameState) OnUpdate(delta time.Duration) {
 			return
 		}
 
-		ps.idleElapsed = 0
+		ps.IdleElapsed = 0
 		ps.warnedClose = false
 		ps.Resume()
 
@@ -132,78 +132,4 @@ func (ps *PreGameState) OnEnd() {
 
 func (ps *PreGameState) GetDuration() time.Duration {
 	return 31 * time.Second
-}
-
-type InGameState struct {
-	*gamelib.MatchStateBase
-}
-
-func NewInGameState(m *gamelib.Match) *InGameState {
-	s := &InGameState{}
-	s.MatchStateBase = gamelib.NewMatchStateBase(m, s)
-	return s
-}
-
-func (is *InGameState) OnStart() {
-	m := is.Match()
-	m.World().Exec(func(tx *world.Tx) {
-		m.Start(tx)
-	})
-}
-
-func (is *InGameState) OnUpdate(time.Duration) {
-	m := is.Match()
-	m.World().Exec(func(tx *world.Tx) {
-		m.Players(tx, func(p *player.Player, pa *gamelib.Participant) {
-			if sb := m.Definition().NewScoreboard; sb != nil {
-				p.SendScoreboard(sb(m, p, pa))
-			}
-		})
-	})
-}
-
-func (is *InGameState) OnEnd() {
-	m := is.Match()
-	m.World().Exec(func(tx *world.Tx) {
-		m.End(tx)
-	})
-}
-
-func (is *InGameState) GetDuration() time.Duration {
-	return time.Minute * 10
-}
-
-type EndGameState struct {
-	*gamelib.MatchStateBase
-}
-
-func NewEndGameState(m *gamelib.Match) *EndGameState {
-	s := &EndGameState{}
-	s.MatchStateBase = gamelib.NewMatchStateBase(m, s)
-	return s
-}
-
-func (es *EndGameState) OnStart() {
-}
-
-func (es *EndGameState) OnUpdate(time.Duration) {
-	m := es.Match()
-	m.World().Exec(func(tx *world.Tx) {
-		m.Players(tx, func(p *player.Player, pa *gamelib.Participant) {
-			if sb := m.Definition().NewScoreboard; sb != nil {
-				p.SendScoreboard(sb(m, p, pa))
-			}
-		})
-	})
-}
-
-func (es *EndGameState) OnEnd() {
-	m := es.Match()
-	m.World().Exec(func(tx *world.Tx) {
-		m.Close(tx)
-	})
-}
-
-func (es *EndGameState) GetDuration() time.Duration {
-	return time.Second * 10
 }
