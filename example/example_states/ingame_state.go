@@ -3,9 +3,9 @@ package example_states
 import (
 	"time"
 
-	"github.com/blockbrawn/gamelib/gamelib"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
+	"github.com/josscoder/gamelib/gamelib"
 )
 
 type InGameState struct {

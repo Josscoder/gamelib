@@ -4,11 +4,11 @@ import (
 	"log"
 	"log/slog"
 
-	"github.com/blockbrawn/gamelib/example"
-	"github.com/blockbrawn/gamelib/gamelib"
 	"github.com/df-mc/dragonfly/server"
 	"github.com/df-mc/dragonfly/server/cmd"
 	"github.com/df-mc/dragonfly/server/player/chat"
+	"github.com/josscoder/gamelib/example"
+	"github.com/josscoder/gamelib/gamelib"
 	"github.com/sandertv/gophertunnel/minecraft/text"
 )
 

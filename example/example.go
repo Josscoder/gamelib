@@ -6,14 +6,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blockbrawn/gamelib/example/example_components"
-	"github.com/blockbrawn/gamelib/example/example_handlers"
-	"github.com/blockbrawn/gamelib/example/example_states"
-	"github.com/blockbrawn/gamelib/gamelib"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/player/scoreboard"
 	"github.com/df-mc/dragonfly/server/world"
 	"github.com/josscoder/fsmgo/state"
+	"github.com/josscoder/gamelib/example/example_components"
+	"github.com/josscoder/gamelib/example/example_handlers"
+	"github.com/josscoder/gamelib/example/example_states"
+	"github.com/josscoder/gamelib/gamelib"
 	"github.com/sandertv/gophertunnel/minecraft/text"
 )
 
@@ -100,7 +100,7 @@ func exampleScoreboard(m *gamelib.Match, p *player.Player, pa *gamelib.Participa
 		)
 	}
 
-	lines = append(lines, text.Colourf("<gold>mc.blockbrawn.net</gold>"))
+	lines = append(lines, text.Colourf("<gold>mc.josscoder.net</gold>"))
 	_, _ = sb.WriteString(strings.Join(lines, "\n"))
 
 	return sb

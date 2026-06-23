@@ -4,10 +4,10 @@ import (
 	"math"
 	"time"
 
-	"github.com/blockbrawn/gamelib/gamelib"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/player/title"
 	"github.com/df-mc/dragonfly/server/world"
+	"github.com/josscoder/gamelib/gamelib"
 	"github.com/sandertv/gophertunnel/minecraft/text"
 )
 

@@ -1,11 +1,11 @@
 package example_handlers
 
 import (
-	"github.com/blockbrawn/gamelib/example/example_config"
-	"github.com/blockbrawn/gamelib/gamelib"
 	"github.com/df-mc/dragonfly/server/block/cube"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/go-gl/mathgl/mgl64"
+	"github.com/josscoder/gamelib/example/example_config"
+	"github.com/josscoder/gamelib/gamelib"
 )
 
 type ExamplePlayerHandler struct {

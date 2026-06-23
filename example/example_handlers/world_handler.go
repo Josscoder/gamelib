@@ -1,8 +1,8 @@
 package example_handlers
 
 import (
-	"github.com/blockbrawn/gamelib/gamelib"
 	"github.com/df-mc/dragonfly/server/world"
+	"github.com/josscoder/gamelib/gamelib"
 )
 
 type ExampleWorldHandler struct {

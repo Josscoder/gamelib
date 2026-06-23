@@ -3,10 +3,10 @@ package example_components
 import (
 	"log"
 
-	"github.com/blockbrawn/gamelib/example/example_config"
-	"github.com/blockbrawn/gamelib/gamelib"
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
+	"github.com/josscoder/gamelib/example/example_config"
+	"github.com/josscoder/gamelib/gamelib"
 )
 
 type SpawnComponent struct {
