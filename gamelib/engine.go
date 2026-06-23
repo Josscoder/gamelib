@@ -37,6 +37,17 @@ func (e *Engine) Register(def *GameDefinition) {
 	e.definitions[def.Name] = def
 }
 
+// GameNames returns the names of all registered games.
+func (e *Engine) GameNames() []string {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+	names := make([]string, 0, len(e.definitions))
+	for name := range e.definitions {
+		names = append(names, name)
+	}
+	return names
+}
+
 // PlayerHandler returns the global player.Handler to assign
 // to every player that connects. This handler routes events
 // to the correct match.
