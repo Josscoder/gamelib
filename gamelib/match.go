@@ -363,6 +363,11 @@ func (m *Match) Close(tx *world.Tx) {
 		m.stateSeries.End()
 	}
 
+	// Remove all players
+	for _, p := range m.Players(tx) {
+		m.Leave(p)
+	}
+
 	m.setState(MatchStateClosed)
 
 	// Close arena.
