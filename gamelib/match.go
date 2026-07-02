@@ -158,16 +158,13 @@ func (m *Match) leave(p *player.Player, disconnected bool) {
 		return
 	}
 
+	// Notify components.
 	for _, c := range m.components {
-		c.OnPreQuit(p, par, disconnected)
+		c.OnQuit(p, par, disconnected)
 	}
 
 	m.participants.Delete(p.XUID())
 	par.session.setMatch(nil)
-
-	for _, c := range m.components {
-		c.OnPostQuit(p, disconnected)
-	}
 }
 
 // Leave removes a player voluntarily from the match.

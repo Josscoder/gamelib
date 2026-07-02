@@ -18,11 +18,8 @@ type Component interface {
 	// OnJoin is called when a player joins the match.
 	OnJoin(p *player.Player, par *Participant)
 
-	// OnPreQuit is called before a player is removed. Participant still valid.
-	OnPreQuit(p *player.Player, par *Participant, disconnected bool)
-
-	// OnPostQuit is called after a player has been removed.
-	OnPostQuit(p *player.Player, disconnected bool)
+	// OnQuit is called when a player leaves.
+	OnQuit(p *player.Player, par *Participant, disconnected bool)
 
 	// OnStart is called when the match transitions to Playing.
 	OnStart(tx *world.Tx)
@@ -35,10 +32,9 @@ type Component interface {
 // Embed this to avoid implementing every method.
 type BaseComponent struct{}
 
-func (BaseComponent) Enable(*Match)                                {}
-func (BaseComponent) Disable()                                     {}
-func (BaseComponent) OnJoin(*player.Player, *Participant)          {}
-func (BaseComponent) OnPreQuit(*player.Player, *Participant, bool) {}
-func (BaseComponent) OnPostQuit(*player.Player, bool)              {}
-func (BaseComponent) OnStart(*world.Tx)                            {}
-func (BaseComponent) OnEnd(*world.Tx)                              {}
+func (BaseComponent) Enable(*Match)                             {}
+func (BaseComponent) Disable()                                  {}
+func (BaseComponent) OnJoin(*player.Player, *Participant)       {}
+func (BaseComponent) OnQuit(*player.Player, *Participant, bool) {}
+func (BaseComponent) OnStart(*world.Tx)                         {}
+func (BaseComponent) OnEnd(*world.Tx)                           {}
