@@ -42,7 +42,7 @@ func (ps *PreGameState) OnUpdate(delta time.Duration) {
 		r := ps.GetRemainingTime()
 		secs := int(r.Seconds())
 
-		m.Players(tx, func(p *player.Player, pa *gamelib.Participant) {
+		m.ForEachPlayer(tx, func(p *player.Player, pa *gamelib.Participant) {
 			p.SetExperienceLevel(secs)
 
 			progress := math.Max(
@@ -65,7 +65,7 @@ func (ps *PreGameState) OnUpdate(delta time.Duration) {
 			if !ps.warnedClose && remaining <= preGameIdleWarning {
 				ps.warnedClose = true
 
-				m.Players(tx, func(p *player.Player, _ *gamelib.Participant) {
+				m.ForEachPlayer(tx, func(p *player.Player, _ *gamelib.Participant) {
 					p.Message(text.Colourf(
 						"<red>La partida cerrará en <bold>%.0f segundos</bold> por falta de jugadores.",
 						remaining.Seconds(),
@@ -82,7 +82,7 @@ func (ps *PreGameState) OnUpdate(delta time.Duration) {
 				ps.SetRemainingTime(ps.GetDuration())
 				ps.Pause()
 
-				m.Players(tx, func(p *player.Player, _ *gamelib.Participant) {
+				m.ForEachPlayer(tx, func(p *player.Player, _ *gamelib.Participant) {
 					p.Message(text.Colourf(
 						"<red>Juego pausado: no hay suficientes jugadores.",
 					))
@@ -102,7 +102,7 @@ func (ps *PreGameState) OnUpdate(delta time.Duration) {
 
 		switch {
 		case secs > 5 && secs%10 == 0:
-			m.Players(tx, func(p *player.Player, _ *gamelib.Participant) {
+			m.ForEachPlayer(tx, func(p *player.Player, _ *gamelib.Participant) {
 				p.Message(text.Colourf(
 					"<yellow>El juego comienza en <bold>%d</bold> segundos.",
 					secs,
@@ -110,7 +110,7 @@ func (ps *PreGameState) OnUpdate(delta time.Duration) {
 			})
 
 		case secs > 0 && secs <= 5:
-			m.Players(tx, func(p *player.Player, _ *gamelib.Participant) {
+			m.ForEachPlayer(tx, func(p *player.Player, _ *gamelib.Participant) {
 				p.SendTitle(title.New(
 					text.Colourf("<red><bold>%d", secs),
 				))
@@ -122,7 +122,7 @@ func (ps *PreGameState) OnUpdate(delta time.Duration) {
 func (ps *PreGameState) OnEnd() {
 	m := ps.Match()
 	m.World().Exec(func(tx *world.Tx) {
-		m.Players(tx, func(p *player.Player, _ *gamelib.Participant) {
+		m.ForEachPlayer(tx, func(p *player.Player, _ *gamelib.Participant) {
 			p.SendTitle(title.New(
 				text.Colourf("<green><bold>¡YA!"),
 			))

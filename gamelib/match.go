@@ -220,8 +220,8 @@ func (m *Match) AliveCount() int {
 	return n
 }
 
-// Players calls fn for each participant resolvable in tx.
-func (m *Match) Players(tx *world.Tx, fn func(*player.Player, *Participant)) {
+// ForEachPlayer iterates participants without allowing mutation of m.participants.
+func (m *Match) ForEachPlayer(tx *world.Tx, fn func(*player.Player, *Participant)) {
 	for _, par := range m.participants.Map() {
 		p, ok := par.session.Player(tx)
 		if !ok {
@@ -229,6 +229,22 @@ func (m *Match) Players(tx *world.Tx, fn func(*player.Player, *Participant)) {
 		}
 		fn(p, par)
 	}
+}
+
+// Players returns a snapshot slice, safe to use while mutating m.participants.
+func (m *Match) Players(tx *world.Tx) []*player.Player {
+	participants := m.participants.Map()
+	players := make([]*player.Player, 0, len(participants))
+
+	for _, par := range participants {
+		p, ok := par.session.Player(tx)
+		if !ok {
+			continue
+		}
+		players = append(players, p)
+	}
+
+	return players
 }
 
 // SetMeta stores an arbitrary value for the given key.
@@ -348,9 +364,9 @@ func (m *Match) Close(tx *world.Tx) {
 	}
 
 	// Remove all players
-	m.Players(tx, func(p *player.Player, par *Participant) {
-		m.leave(p, false)
-	})
+	for _, p := range m.Players(tx) {
+		m.Leave(p)
+	}
 
 	m.setState(MatchStateClosed)
 

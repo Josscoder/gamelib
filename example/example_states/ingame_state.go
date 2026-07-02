@@ -28,7 +28,7 @@ func (is *InGameState) OnStart() {
 func (is *InGameState) OnUpdate(time.Duration) {
 	m := is.Match()
 	m.World().Exec(func(tx *world.Tx) {
-		m.Players(tx, func(p *player.Player, pa *gamelib.Participant) {
+		m.ForEachPlayer(tx, func(p *player.Player, pa *gamelib.Participant) {
 			if sb := m.Definition().NewScoreboard; sb != nil {
 				p.SendScoreboard(sb(m, p, pa))
 			}

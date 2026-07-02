@@ -51,7 +51,7 @@ func (s *SpawnComponent) OnStart(tx *world.Tx) {
 
 	index := 0
 
-	s.match.Players(tx, func(p *player.Player, pa *gamelib.Participant) {
+	s.match.ForEachPlayer(tx, func(p *player.Player, pa *gamelib.Participant) {
 		if len(spawns) == 0 {
 			return
 		}
