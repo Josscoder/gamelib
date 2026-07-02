@@ -354,10 +354,6 @@ func (m *Match) Close(tx *world.Tx) {
 		return
 	}
 
-	for _, c := range m.components {
-		c.Disable()
-	}
-
 	// Stop state series.
 	if m.stateSeries != nil {
 		m.stateSeries.End()
@@ -366,6 +362,10 @@ func (m *Match) Close(tx *world.Tx) {
 	// Remove all players
 	for _, p := range m.Players(tx) {
 		m.Leave(p)
+	}
+
+	for _, c := range m.components {
+		c.Disable()
 	}
 
 	m.setState(MatchStateClosed)
