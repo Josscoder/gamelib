@@ -16,8 +16,8 @@ func (a *Arena) World() *world.World { return a.w }
 
 // Close shuts down and cleans up the arena.
 func (a *Arena) Close() {
-	/*if a.w != nil {
+	if a.w != nil {
 		_ = a.w.Close()
-	}*/
+	}
 	_ = os.RemoveAll(a.path)
 }
