@@ -159,13 +159,16 @@ func (m *Match) leave(p *player.Player, disconnected bool) {
 		return
 	}
 
-	// Notify components.
 	for _, c := range m.components {
-		c.OnQuit(p, par, disconnected)
+		c.OnPreQuit(p, par, disconnected)
 	}
 
 	m.participants.Delete(p.XUID())
 	par.session.setMatch(nil)
+
+	for _, c := range m.components {
+		c.OnPostQuit(p, disconnected)
+	}
 }
 
 // Leave removes a player voluntarily from the match.
@@ -355,13 +358,6 @@ func (m *Match) Close(tx *world.Tx) {
 		return
 	}
 
-	m.setState(MatchStateClosed)
-
-	// Remove all players
-	for _, p := range m.Players(tx) {
-		m.Leave(p)
-	}
-
 	for _, c := range m.components {
 		c.Disable()
 	}
@@ -370,6 +366,13 @@ func (m *Match) Close(tx *world.Tx) {
 	if m.stateSeries != nil {
 		m.stateSeries.End()
 	}
+
+	// Remove all players
+	for _, p := range m.Players(tx) {
+		m.Leave(p)
+	}
+
+	m.setState(MatchStateClosed)
 
 	if m.onClose != nil {
 		m.onClose()
