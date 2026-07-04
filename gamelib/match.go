@@ -355,6 +355,13 @@ func (m *Match) Close(tx *world.Tx) {
 		return
 	}
 
+	m.setState(MatchStateClosed)
+
+	// Remove all players
+	for _, p := range m.Players(tx) {
+		m.Leave(p)
+	}
+
 	for _, c := range m.components {
 		c.Disable()
 	}
@@ -364,12 +371,9 @@ func (m *Match) Close(tx *world.Tx) {
 		m.stateSeries.End()
 	}
 
-	// Remove all players
-	for _, p := range m.Players(tx) {
-		m.Leave(p)
+	if m.onClose != nil {
+		m.onClose()
 	}
-
-	m.setState(MatchStateClosed)
 
 	// Close arena after 10 second
 	if m.arena != nil {
@@ -377,10 +381,6 @@ func (m *Match) Close(tx *world.Tx) {
 		time.AfterFunc(10*time.Second, func() {
 			arena.Close()
 		})
-	}
-
-	if m.onClose != nil {
-		m.onClose()
 	}
 
 	m.log.Info("match closed")
