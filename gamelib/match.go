@@ -359,7 +359,7 @@ func (m *Match) Close(tx *world.Tx) {
 	}
 
 	for _, c := range m.components {
-		c.Disable()
+		c.Disable(tx)
 	}
 
 	// Stop state series.

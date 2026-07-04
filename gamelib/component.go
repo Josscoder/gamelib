@@ -13,7 +13,7 @@ type Component interface {
 	Enable(m *Match)
 
 	// Disable is called when the match closes. Cleanup here.
-	Disable()
+	Disable(tx *world.Tx)
 
 	// OnJoin is called when a player joins the match.
 	OnJoin(p *player.Player, par *Participant)
@@ -36,7 +36,7 @@ type Component interface {
 type BaseComponent struct{}
 
 func (BaseComponent) Enable(*Match)                                {}
-func (BaseComponent) Disable()                                     {}
+func (BaseComponent) Disable(*world.Tx)                            {}
 func (BaseComponent) OnJoin(*player.Player, *Participant)          {}
 func (BaseComponent) OnPreQuit(*player.Player, *Participant, bool) {}
 func (BaseComponent) OnPostQuit(*player.Player, bool)              {}
