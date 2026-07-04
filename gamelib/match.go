@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
@@ -370,9 +371,12 @@ func (m *Match) Close(tx *world.Tx) {
 
 	m.setState(MatchStateClosed)
 
-	// Close arena.
+	// Close arena after 10 second
 	if m.arena != nil {
-		m.arena.Close()
+		arena := m.arena
+		time.AfterFunc(10*time.Second, func() {
+			arena.Close()
+		})
 	}
 
 	if m.onClose != nil {
