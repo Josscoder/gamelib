@@ -44,13 +44,11 @@ func (pc PauseCommand) Run(src cmd.Source, output *cmd.Output, _ *world.Tx) {
 	}
 
 	series := m.StateSeries()
-
 	if series.IsPaused() {
 		output.Error("The match is already paused")
 		return
 	}
-
-	series.SetPaused(true)
+	series.Pause()
 
 	output.Print(text.Colourf(
 		"<green>The match has been successfully paused</green>",
@@ -73,13 +71,11 @@ func (rc ResumeCommand) Run(src cmd.Source, output *cmd.Output, _ *world.Tx) {
 	}
 
 	series := m.StateSeries()
-
 	if !series.IsPaused() {
 		output.Error("The match is not paused")
 		return
 	}
-
-	series.SetPaused(false)
+	series.Resume()
 
 	output.Print(text.Colourf(
 		"<green>The match has successfully resumed</green>",
