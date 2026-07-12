@@ -8,6 +8,8 @@ github.com/df-mc/dragonfly v0.10.14-0.20260609033005-7c304285e8de h1:v6dNWi/IEG/
 github.com/df-mc/dragonfly v0.10.14-0.20260609033005-7c304285e8de/go.mod h1:DqV/SFGs3YWsePK2/0hBuNBhjvkNxUKho3rxvj2p6I8=
 github.com/df-mc/dragonfly v0.10.15-0.20260617164324-7f68b0673dd7 h1:gvJfo7LYz9/FzswCUTMMgqypmKWAY1Fgs5yWkqrHb1s=
 github.com/df-mc/dragonfly v0.10.15-0.20260617164324-7f68b0673dd7/go.mod h1:OFJjCz3xfDalVZEtV4lJdbenwKDEAczKHikHN7kVwMc=
+github.com/df-mc/dragonfly v0.10.15-0.20260712224413-18d9c78d26f7 h1:yZ2QCxqr9/FcyhXyxBUyQ/zXN7pX/tAlXQSgvjgYE7I=
+github.com/df-mc/dragonfly v0.10.15-0.20260712224413-18d9c78d26f7/go.mod h1:OFJjCz3xfDalVZEtV4lJdbenwKDEAczKHikHN7kVwMc=
 github.com/df-mc/go-playfab v1.0.0 h1:6gVukk3aQbJ934GJFdcZJHVIw9lhauK+KHOevbwJA10=
 github.com/df-mc/go-playfab v1.0.0/go.mod h1:nGOlE+JFGOH5Z0iidEgJapHhndFi/oNk17RN9pKCF+k=
 github.com/df-mc/go-xsapi v1.0.1 h1:H1SbxYr4rXOqZSB8MwiODbDUsHRihxbHf+YOljUWgXw=

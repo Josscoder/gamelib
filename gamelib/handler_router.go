@@ -35,13 +35,13 @@ func (h *enginePlayerHandler) resolve(p *player.Player) (player.Handler, *Match,
 }
 
 func (h *enginePlayerHandler) HandleMove(ctx *player.Context, newPos mgl64.Vec3, newRot cube.Rotation) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleMove(ctx, newPos, newRot)
 	}
 }
 
 func (h *enginePlayerHandler) HandleHurt(ctx *player.Context, damage *float64, immune bool, attackImmunity *time.Duration, src world.DamageSource) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -59,7 +59,7 @@ func (h *enginePlayerHandler) HandleDeath(p *player.Player, src world.DamageSour
 }
 
 func (h *enginePlayerHandler) HandleBlockBreak(ctx *player.Context, pos cube.Pos, drops *[]item.Stack, xp *int) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -71,7 +71,7 @@ func (h *enginePlayerHandler) HandleBlockBreak(ctx *player.Context, pos cube.Pos
 }
 
 func (h *enginePlayerHandler) HandleBlockPlace(ctx *player.Context, pos cube.Pos, b world.Block) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -93,7 +93,7 @@ func (h *enginePlayerHandler) HandleJump(p *player.Player) {
 }
 
 func (h *enginePlayerHandler) HandleTeleport(ctx *player.Context, pos mgl64.Vec3) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleTeleport(ctx, pos)
 	}
 }
@@ -105,25 +105,25 @@ func (h *enginePlayerHandler) HandleChangeWorld(p *player.Player, before, after 
 }
 
 func (h *enginePlayerHandler) HandleToggleSprint(ctx *player.Context, after bool) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleToggleSprint(ctx, after)
 	}
 }
 
 func (h *enginePlayerHandler) HandleToggleSneak(ctx *player.Context, after bool) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleToggleSneak(ctx, after)
 	}
 }
 
 func (h *enginePlayerHandler) HandleChat(ctx *player.Context, message *string) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleChat(ctx, message)
 	}
 }
 
 func (h *enginePlayerHandler) HandleFoodLoss(ctx *player.Context, from int, to *int) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -135,7 +135,7 @@ func (h *enginePlayerHandler) HandleFoodLoss(ctx *player.Context, from int, to *
 }
 
 func (h *enginePlayerHandler) HandleHeal(ctx *player.Context, health *float64, src world.HealingSource) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleHeal(ctx, health, src)
 	}
 }
@@ -147,19 +147,19 @@ func (h *enginePlayerHandler) HandleRespawn(p *player.Player, pos *mgl64.Vec3, w
 }
 
 func (h *enginePlayerHandler) HandleSkinChange(ctx *player.Context, skin *skin.Skin) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleSkinChange(ctx, skin)
 	}
 }
 
 func (h *enginePlayerHandler) HandleFireExtinguish(ctx *player.Context, pos cube.Pos) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleFireExtinguish(ctx, pos)
 	}
 }
 
 func (h *enginePlayerHandler) HandleStartBreak(ctx *player.Context, pos cube.Pos) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -171,7 +171,7 @@ func (h *enginePlayerHandler) HandleStartBreak(ctx *player.Context, pos cube.Pos
 }
 
 func (h *enginePlayerHandler) HandleBlockPick(ctx *player.Context, pos cube.Pos, b world.Block) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -183,37 +183,37 @@ func (h *enginePlayerHandler) HandleBlockPick(ctx *player.Context, pos cube.Pos,
 }
 
 func (h *enginePlayerHandler) HandleItemUse(ctx *player.Context) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleItemUse(ctx)
 	}
 }
 
 func (h *enginePlayerHandler) HandleItemUseOnBlock(ctx *player.Context, pos cube.Pos, face cube.Face, clickPos mgl64.Vec3) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleItemUseOnBlock(ctx, pos, face, clickPos)
 	}
 }
 
 func (h *enginePlayerHandler) HandleItemUseOnEntity(ctx *player.Context, e world.Entity) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleItemUseOnEntity(ctx, e)
 	}
 }
 
 func (h *enginePlayerHandler) HandleItemRelease(ctx *player.Context, item item.Stack, dur time.Duration) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleItemRelease(ctx, item, dur)
 	}
 }
 
 func (h *enginePlayerHandler) HandleItemConsume(ctx *player.Context, item item.Stack) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleItemConsume(ctx, item)
 	}
 }
 
 func (h *enginePlayerHandler) HandleAttackEntity(ctx *player.Context, e world.Entity, force, height *float64, critical *bool) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -225,7 +225,7 @@ func (h *enginePlayerHandler) HandleAttackEntity(ctx *player.Context, e world.En
 }
 
 func (h *enginePlayerHandler) HandleExperienceGain(ctx *player.Context, amount *int) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -237,13 +237,13 @@ func (h *enginePlayerHandler) HandleExperienceGain(ctx *player.Context, amount *
 }
 
 func (h *enginePlayerHandler) HandlePunchAir(ctx *player.Context) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandlePunchAir(ctx)
 	}
 }
 
 func (h *enginePlayerHandler) HandleSignEdit(ctx *player.Context, pos cube.Pos, frontSide bool, oldText, newText string) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -255,7 +255,7 @@ func (h *enginePlayerHandler) HandleSignEdit(ctx *player.Context, pos cube.Pos, 
 }
 
 func (h *enginePlayerHandler) HandleSleep(ctx *player.Context, sendReminder *bool) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -267,7 +267,7 @@ func (h *enginePlayerHandler) HandleSleep(ctx *player.Context, sendReminder *boo
 }
 
 func (h *enginePlayerHandler) HandleLecternPageTurn(ctx *player.Context, pos cube.Pos, oldPage int, newPage *int) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -279,13 +279,13 @@ func (h *enginePlayerHandler) HandleLecternPageTurn(ctx *player.Context, pos cub
 }
 
 func (h *enginePlayerHandler) HandleItemDamage(ctx *player.Context, i item.Stack, damage *int) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleItemDamage(ctx, i, damage)
 	}
 }
 
 func (h *enginePlayerHandler) HandleItemPickup(ctx *player.Context, i *item.Stack) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -297,13 +297,13 @@ func (h *enginePlayerHandler) HandleItemPickup(ctx *player.Context, i *item.Stac
 }
 
 func (h *enginePlayerHandler) HandleHeldSlotChange(ctx *player.Context, from, to int) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleHeldSlotChange(ctx, from, to)
 	}
 }
 
 func (h *enginePlayerHandler) HandleItemDrop(ctx *player.Context, s item.Stack) {
-	ph, m, ok := h.resolve(ctx.Val())
+	ph, m, ok := h.resolve(ctx.Player())
 	if !ok {
 		return
 	}
@@ -315,13 +315,13 @@ func (h *enginePlayerHandler) HandleItemDrop(ctx *player.Context, s item.Stack) 
 }
 
 func (h *enginePlayerHandler) HandleTransfer(ctx *player.Context, addr *net.UDPAddr) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleTransfer(ctx, addr)
 	}
 }
 
 func (h *enginePlayerHandler) HandleCommandExecution(ctx *player.Context, command cmd.Command, args []string) {
-	if ph, _, ok := h.resolve(ctx.Val()); ok {
+	if ph, _, ok := h.resolve(ctx.Player()); ok {
 		ph.HandleCommandExecution(ctx, command, args)
 	}
 }

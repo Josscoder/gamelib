@@ -3,7 +3,7 @@ module github.com/josscoder/gamelib
 go 1.26.0
 
 require (
-	github.com/df-mc/dragonfly v0.10.15-0.20260617164324-7f68b0673dd7
+	github.com/df-mc/dragonfly v0.10.15-0.20260712224413-18d9c78d26f7
 	github.com/go-gl/mathgl v1.2.0
 	github.com/google/uuid v1.6.0
 	github.com/pelletier/go-toml v1.9.5
