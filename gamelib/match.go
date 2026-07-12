@@ -114,6 +114,18 @@ func (m *Match) PlayerHandler() player.Handler { return m.playerHandler }
 // WorldHandler returns the per-match world handler.
 func (m *Match) WorldHandler() world.Handler { return m.worldHandler }
 
+// ComponentOf returns the first component assignable to T.
+func ComponentOf[T Component](m *Match) (T, bool) {
+	for _, c := range m.components {
+		if v, ok := c.(T); ok {
+			return v, true
+		}
+	}
+
+	var zero T
+	return zero, false
+}
+
 // --- Player Management ---
 
 // Join adds a player to this match.
