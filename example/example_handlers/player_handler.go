@@ -20,6 +20,6 @@ func NewExamplePlayerHandler(m *gamelib.Match) *ExamplePlayerHandler {
 func (eh ExamplePlayerHandler) HandleMove(ctx *player.Context, newPos mgl64.Vec3, _ cube.Rotation) {
 	if eh.match.State() != gamelib.MatchStatePlaying && newPos.Y() < 0 {
 		cfg := gamelib.GetConfig[*example_config.ExampleMapData](eh.match.SelectedMap())
-		ctx.Val().Teleport(cfg.Mid.Vec3)
+		ctx.Player().Teleport(cfg.Mid.Vec3)
 	}
 }

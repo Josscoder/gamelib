@@ -2,6 +2,7 @@ package gamelib
 
 import (
 	"sync"
+	"time"
 
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
@@ -45,6 +46,23 @@ func (p *Participant) Alive() bool { return p.State() == ParticipantAlive }
 // Player resolves the *player.Player from a Tx.
 func (p *Participant) Player(tx *world.Tx) (*player.Player, bool) {
 	return p.session.Player(tx)
+}
+
+// Do schedules f to run with the participant's player on their current world
+// owner and returns immediately. Safe to call from any goroutine, including
+// from a callback already running on a different world's owner — the case
+// that used to risk a self-deadlock with the old World.Exec/ExecWorld APIs.
+// If the player has since quit, the returned *world.Task fails with
+// world.ErrEntityClosed.
+func (p *Participant) Do(f func(tx *world.Tx, pl *player.Player)) *world.Task {
+	return p.session.Do(f)
+}
+
+// DoAfter schedules f to run with the participant's player after delay,
+// following them across world changes in the meantime. Safe to call from
+// any goroutine, for the same reasons as Do.
+func (p *Participant) DoAfter(delay time.Duration, f func(tx *world.Tx, pl *player.Player)) *world.Task {
+	return p.session.DoAfter(delay, f)
 }
 
 // XUID returns the participant's XUID (delegate to session).

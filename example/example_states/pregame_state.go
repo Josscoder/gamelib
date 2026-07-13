@@ -38,7 +38,7 @@ func (ps *PreGameState) OnStart() {
 func (ps *PreGameState) OnUpdate(delta time.Duration) {
 	m := ps.Match()
 
-	m.World().Exec(func(tx *world.Tx) {
+	m.World().Do(func(tx *world.Tx) {
 		r := ps.GetRemainingTime()
 		secs := int(r.Seconds())
 
@@ -121,7 +121,7 @@ func (ps *PreGameState) OnUpdate(delta time.Duration) {
 
 func (ps *PreGameState) OnEnd() {
 	m := ps.Match()
-	m.World().Exec(func(tx *world.Tx) {
+	m.World().Do(func(tx *world.Tx) {
 		m.ForEachPlayer(tx, func(p *player.Player, _ *gamelib.Participant) {
 			p.SendTitle(title.New(
 				text.Colourf("<green><bold>¡YA!"),

@@ -28,7 +28,7 @@ func (s *SpawnComponent) Enable(m *gamelib.Match) {
 
 func (s *SpawnComponent) OnJoin(p *player.Player, par *gamelib.Participant) {
 	oldP := p.Tx().RemoveEntity(p)
-	s.match.World().Exec(func(tx *world.Tx) {
+	s.match.World().Do(func(tx *world.Tx) {
 		newP := tx.AddEntity(oldP).(*player.Player)
 		sm := s.match.SelectedMap()
 		cfg := gamelib.GetConfig[*example_config.ExampleMapData](sm)
@@ -36,7 +36,11 @@ func (s *SpawnComponent) OnJoin(p *player.Player, par *gamelib.Participant) {
 	})
 }
 
-func (s *SpawnComponent) OnQuit(p *player.Player, par *gamelib.Participant, disconnected bool) {
+func (s *SpawnComponent) OnPreQuit(p *player.Player, par *gamelib.Participant, disconnected bool) {
+
+}
+
+func (s *SpawnComponent) OnPostQuit(p *player.Player, disconnected bool) {
 
 }
 

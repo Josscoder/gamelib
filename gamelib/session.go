@@ -2,6 +2,7 @@ package gamelib
 
 import (
 	"sync"
+	"time"
 
 	"github.com/df-mc/dragonfly/server/player"
 	"github.com/df-mc/dragonfly/server/world"
@@ -32,16 +33,40 @@ func (s *Session) setMatch(m *Match) {
 
 // Player resolves the *player.Player from a Tx.
 func (s *Session) Player(tx *world.Tx) (*player.Player, bool) {
-	e, ok := s.handle.Entity(tx)
+	h := s.Handle()
+	if h == nil {
+		return nil, false
+	}
+	e, ok := h.Entity(tx)
 	if !ok {
 		return nil, false
 	}
 	return e.(*player.Player), true
 }
 
-// Handle returns the entity handle.
+// Handle returns the entity handle. Safe to call from any goroutine; may
+// return nil once the session has closed (e.g. after the player quit).
 func (s *Session) Handle() *world.EntityHandle {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	return s.handle
+}
+
+// Do schedules f to run with the player on their current world owner and
+// returns immediately, safe to call from any goroutine (timers, webhooks,
+// background workers, etc.) — including from inside a match/component
+// callback that is already on some other world's owner, where a blocking
+// call would risk a deadlock. If the session has since closed (the player
+// quit), the returned *world.Task fails with world.ErrEntityClosed.
+func (s *Session) Do(f func(tx *world.Tx, p *player.Player)) *world.Task {
+	return player.Do(s.Handle(), f)
+}
+
+// DoAfter schedules f to run with the player after delay, following them
+// across world changes (e.g. portals) in the meantime. Safe to call from
+// any goroutine, for the same reasons as Do.
+func (s *Session) DoAfter(delay time.Duration, f func(tx *world.Tx, p *player.Player)) *world.Task {
+	return player.DoAfter(s.Handle(), delay, f)
 }
 
 // XUID returns the player's XUID.
