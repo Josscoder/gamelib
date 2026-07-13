@@ -98,13 +98,13 @@ func (wh *matchWorldHandler) HandleExplosion(ctx *world.Context, position mgl64.
 	wh.match.worldHandler.HandleExplosion(ctx, position, entities, blocks, itemDropChance, spawnFire)
 }
 
-func (wh *matchWorldHandler) HandleRedstoneUpdate(ctx *world.Context, pos cube.Pos) {
+func (wh *matchWorldHandler) HandleRedstoneUpdate(ctx *world.Context, update world.RedstoneUpdate) {
 	if wh.match.State() != MatchStatePlaying {
 		ctx.Cancel()
 		return
 	}
 
-	wh.match.worldHandler.HandleRedstoneUpdate(ctx, pos)
+	wh.match.worldHandler.HandleRedstoneUpdate(ctx, update)
 }
 
 func (wh *matchWorldHandler) HandleClose(tx *world.Tx) {
